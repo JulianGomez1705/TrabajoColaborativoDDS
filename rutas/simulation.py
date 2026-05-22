@@ -1,12 +1,20 @@
 from fastapi import APIRouter
-from app.schemas.schemas import SimulationInput, SimulationOutput
-from app.services.calculations import simular_movimiento
+from schemas import ConicaInput, ConicaOutput
+from services.calculations import analizar_conica
 
-router = APIRouter(prefix="/simulation", tags=["Simulación"])
+router = APIRouter(prefix="/conicas", tags=["Superficies Cónicas"])
 
-@router.post("/run", response_model=SimulationOutput)
-def run_simulation(data: SimulationInput):
+
+@router.post("/clasificar", response_model=ConicaOutput)
+def clasificar_superficie(data: ConicaInput):
     """
-    Simula el movimiento del tanque de guerra según los datos físicos ingresados.
+    Recibe los coeficientes de una ecuación cuadrática general en 3D:
+      A·x² + B·y² + C·z² + D·xy + E·xz + F·yz + G·x + H·y + I·z + J = 0
+
+    Retorna:
+    - Tipo de superficie (elipsoide, hiperboloide, paraboloide, etc.)
+    - Gradiente ∇F en el punto (px, py, pz)
+    - Valor F(px, py, pz) para verificar si el punto está en la superficie
+    - Puntos 3D para graficar con Plotly
     """
-    return simular_movimiento(data)
+    return analizar_conica(data)

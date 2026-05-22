@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superficies Cónicas — Cálculo Vectorial</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0a0f; --surface:#12121a; --card:#1a1a26; --border:#2a2a3d;
+  --accent:#7c6af7; --accent2:#f7c26a; --accent3:#6af7c2;
+  --text:#e8e8f0; --muted:#6b6b8a; --danger:#f76a8a;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse 80% 50% at 20% 10%,rgba(124,106,247,.12) 0%,transparent 60%),
+  radial-gradient(ellipse 60% 40% at 80% 80%,rgba(106,247,194,.07) 0%,transparent 50%);
+  pointer-events:none;z-index:0;}
+
+.container{max-width:1300px;margin:0 auto;padding:0 2rem;position:relative;z-index:1;}
+
+header{padding:2.5rem 0 1.5rem;border-bottom:1px solid var(--border);}
+.header-label{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:.2em;text-transform:uppercase;margin-bottom:.4rem;}
+h1{font-family:'DM Serif Display',serif;font-size:clamp(2rem,4vw,3.2rem);line-height:1;background:linear-gradient(135deg,#fff 0%,var(--accent) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.subtitle{font-family:'DM Mono',monospace;font-size:.8rem;color:var(--muted);margin-top:.5rem;letter-spacing:.05em;}
+
+main{display:grid;grid-template-columns:420px 1fr;gap:2rem;padding:1.5rem 0 4rem;}
+@media(max-width:900px){main{grid-template-columns:1fr;}}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.25rem 1.5rem;transition:border-color .2s;}
+.card-title{font-size:.65rem;font-family:'DM Mono',monospace;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;}
+.card-title::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);}
+
+/* INPUTS */
+.coef-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;}
+.punto-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;}
+.coef-item{display:flex;flex-direction:column;gap:.3rem;}
+.coef-item label{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);}
+.coef-item label span{color:var(--accent2);}
+.coef-item input{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:.85rem;padding:.45rem .7rem;outline:none;transition:border-color .2s,box-shadow .2s;width:100%;}
+.coef-item input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,106,247,.15);}
+.coef-item input:not([value="0"]){border-color:rgba(124,106,247,.35);color:var(--accent2);}
+
+.eq-display{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;font-family:'DM Serif Display',serif;font-size:1rem;color:var(--accent2);margin-bottom:1rem;min-height:3rem;display:flex;align-items:center;overflow-x:auto;white-space:nowrap;}
+
+hr{border:none;border-top:1px solid var(--border);margin:.75rem 0;}
+.section-divider{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin:.2rem 0 .6rem;}
+
+/* PRESETS */
+.presets{display:flex;flex-wrap:wrap;gap:.4rem;}
+.preset-btn{background:var(--surface);border:1px solid var(--border);border-radius:20px;color:var(--muted);font-family:'DM Mono',monospace;font-size:.67rem;padding:.3rem .75rem;cursor:pointer;transition:all .2s;}
+.preset-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(124,106,247,.08);}
+.preset-escena{border-color:rgba(247,194,106,.3);color:var(--accent2);}
+.preset-escena:hover{border-color:var(--accent2);background:rgba(247,194,106,.08);color:var(--accent2);}
+
+/* BOTONES */
+.btn{border:none;border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.04em;}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#a06af7);color:#fff;padding:.7rem 1.2rem;font-size:.85rem;width:100%;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(124,106,247,.4);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn-add{background:rgba(106,247,194,.1);border:1px solid rgba(106,247,194,.3);color:var(--accent3);padding:.6rem 1rem;font-size:.8rem;border-radius:10px;width:100%;}
+.btn-add:hover{background:rgba(106,247,194,.18);}
+.btn-sm{padding:.3rem .7rem;font-size:.7rem;border-radius:6px;font-family:'DM Mono',monospace;font-weight:500;cursor:pointer;border:none;transition:all .15s;}
+
+/* LOADING / ERROR */
+.loading{display:none;align-items:center;gap:.6rem;font-family:'DM Mono',monospace;font-size:.75rem;color:var(--accent);}
+.spinner{width:14px;height:14px;border:2px solid rgba(124,106,247,.3);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.error-msg{display:none;background:rgba(247,106,138,.1);border:1px solid rgba(247,106,138,.3);border-radius:10px;padding:.8rem 1rem;font-family:'DM Mono',monospace;font-size:.75rem;color:var(--danger);margin-top:.5rem;}
+
+/* PANEL LEFT */
+.panel-left{display:flex;flex-direction:column;gap:1.25rem;}
+
+/* ESCENA LIST */
+.escena-list{display:flex;flex-direction:column;gap:.6rem;max-height:320px;overflow-y:auto;padding-right:.25rem;}
+.escena-list::-webkit-scrollbar{width:4px;}
+.escena-list::-webkit-scrollbar-track{background:transparent;}
+.escena-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+
+.escena-item{display:flex;align-items:center;gap:.75rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.6rem .9rem;transition:border-color .2s;animation:fadeIn .3s ease;}
+.escena-item:hover{border-color:rgba(124,106,247,.3);}
+.escena-item.oculta{opacity:.4;}
+
+.color-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.escena-nombre{flex:1;font-family:'DM Mono',monospace;font-size:.78rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.escena-tipo{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);}
+
+.escena-actions{display:flex;gap:.35rem;}
+.btn-eye{background:rgba(124,106,247,.1);color:var(--accent);}
+.btn-eye:hover{background:rgba(124,106,247,.25);}
+.btn-del{background:rgba(247,106,138,.1);color:var(--danger);}
+.btn-del:hover{background:rgba(247,106,138,.25);}
+
+.escena-empty{text-align:center;padding:1.5rem;font-family:'DM Mono',monospace;font-size:.75rem;color:var(--muted);}
+
+/* PANEL RIGHT */
+.panel-right{display:flex;flex-direction:column;gap:1.25rem;}
+
+/* RESULTADO */
+.resultado-card{display:none;animation:fadeIn .4s ease;}
+.tipo-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(124,106,247,.15);border:1px solid rgba(124,106,247,.3);border-radius:30px;padding:.35rem .9rem;font-family:'DM Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.75rem;}
+.tipo-nombre{font-family:'DM Serif Display',serif;font-size:1.8rem;color:var(--text);margin-bottom:.4rem;}
+.tipo-desc{color:var(--muted);font-size:.85rem;line-height:1.6;}
+.ecuacion-result{margin-top:.75rem;padding:.6rem 1rem;background:var(--surface);border-radius:8px;border-left:3px solid var(--accent2);font-family:'DM Serif Display',serif;font-size:.95rem;color:var(--accent2);}
+
+.gradiente-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-top:.75rem;}
+.grad-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.75rem;text-align:center;}
+.grad-label{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--accent3);margin-bottom:.2rem;}
+.grad-value{font-family:'DM Mono',monospace;font-size:1rem;color:var(--text);}
+.grad-mag{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;padding:.6rem 1rem;background:rgba(106,247,194,.08);border:1px solid rgba(106,247,194,.2);border-radius:10px;}
+.punto-eval{margin-top:.6rem;font-family:'DM Mono',monospace;font-size:.75rem;color:var(--muted);display:flex;gap:.75rem;flex-wrap:wrap;}
+.tag{padding:.2rem .65rem;border-radius:20px;border:1px solid var(--border);}
+.tag.en-superficie{color:var(--accent3);border-color:rgba(106,247,194,.3);background:rgba(106,247,194,.08);}
+.tag.fuera{color:var(--danger);border-color:rgba(247,106,138,.3);background:rgba(247,106,138,.08);}
+
+/* GRÁFICA */
+.grafica-container{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;flex:1;min-height:520px;display:flex;align-items:center;justify-content:center;}
+#plot{width:100%;height:520px;display:none;}
+.plot-placeholder{text-align:center;color:var(--muted);}
+.plot-placeholder .icon{font-size:3rem;margin-bottom:1rem;opacity:.3;}
+.plot-placeholder p{font-family:'DM Mono',monospace;font-size:.75rem;}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="header-label">Cálculo Vectorial · Proyecto Davinci</div>
+    <h1>Superficies Cónicas 3D</h1>
+    <p class="subtitle">Clasificación · Gradiente · Modo Escena Libre</p>
+  </header>
+
+  <main>
+    <!-- ══ PANEL IZQUIERDO ══ -->
+    <div class="panel-left">
+
+      <!-- Presets individuales -->
+      <div class="card">
+        <div class="card-title">Superficies individuales</div>
+        <div class="presets">
+          <button class="preset-btn" onclick="cargarPreset('esfera')">Esfera</button>
+          <button class="preset-btn" onclick="cargarPreset('elipsoide')">Elipsoide</button>
+          <button class="preset-btn" onclick="cargarPreset('hiperboloide1')">Hiperboloide 1H</button>
+          <button class="preset-btn" onclick="cargarPreset('hiperboloide2')">Hiperboloide 2H</button>
+          <button class="preset-btn" onclick="cargarPreset('paraboloide')">Paraboloide</button>
+          <button class="preset-btn" onclick="cargarPreset('silla')">Silla</button>
+          <button class="preset-btn" onclick="cargarPreset('cono')">Cono</button>
+          <button class="preset-btn" onclick="cargarPreset('cilindro')">Cilindro</button>
+        </div>
+        <hr>
+        <div class="card-title" style="margin-bottom:.5rem;">Escenas completas</div>
+        <div class="presets">
+          <button class="preset-btn preset-escena" onclick="cargarEscena('muneco')">⛄ Muñeco de nieve</button>
+          <button class="preset-btn preset-escena" onclick="cargarEscena('sistema_solar')">🪐 Sistema solar</button>
+          <button class="preset-btn preset-escena" onclick="cargarEscena('torre')">🗼 Torre</button>
+        </div>
+      </div>
+
+      <!-- Coeficientes -->
+      <div class="card">
+        <div class="card-title">Definir superficie</div>
+        <div class="eq-display" id="eqDisplay">Ax² + By² + Cz² + ... = 0</div>
+
+        <div class="section-divider">Términos cuadráticos</div>
+        <div class="coef-grid">
+          <div class="coef-item"><label><span>A</span> · x²</label><input type="number" id="A" value="0" step="any" oninput="actualizarEcuacion()"></div>
+          <div class="coef-item"><label><span>B</span> · y²</label><input type="number" id="B" value="0" step="any" oninput="actualizarEcuacion()"></div>
+          <div class="coef-item"><label><span>C</span> · z²</label><input type="number" id="C" value="0" step="any" oninput="actualizarEcuacion()"></div>
+        </div>
+        <hr>
+        <div class="section-divider">Términos cruzados</div>
+        <div class="coef-grid">
+          <div class="coef-item"><label><span>D</span> · xy</label><input type="number" id="D" value="0" step="any" oninput="actualizarEcuacion()"></div>
+          <div class="coef-item"><label><span>E</span> · xz</label><input type="number" id="E" value="0" step="any" oninput="actualizarEcuacion()"></div>
+          <div class="coef-item"><label><span>F</span> · yz</label><input type="number" id="F" value="0" step="any" oninput="actualizarEcuacion()"></div>
+        </div>
+        <hr>
+        <div class="section-divider">Términos lineales y constante</div>
+        <div class="coef-grid">
+          <div class="coef-item"><label><span>G</span> · x</label><input type="number" id="G" value="0" step="any" oninput="actualizarEcuacion()"></div>
+          <div class="coef-item"><label><span>H</span> · y</label><input type="number" id="H" value="0" step="any" oninput="actualizarEcuacion()"></div>
+          <div class="coef-item"><label><span>I</span> · z</label><input type="number" id="I" value="0" step="any" oninput="actualizarEcuacion()"></div>
+          <div class="coef-item"><label><span>J</span> (constante)</label><input type="number" id="J" value="0" step="any" oninput="actualizarEcuacion()"></div>
+        </div>
+      </div>
+
+      <!-- Punto -->
+      <div class="card">
+        <div class="card-title">Punto de evaluación del gradiente</div>
+        <div class="punto-grid">
+          <div class="coef-item"><label><span>x₀</span></label><input type="number" id="px" value="1" step="any"></div>
+          <div class="coef-item"><label><span>y₀</span></label><input type="number" id="py" value="0" step="any"></div>
+          <div class="coef-item"><label><span>z₀</span></label><input type="number" id="pz" value="0" step="any"></div>
+        </div>
+      </div>
+
+      <!-- Nombre y acciones -->
+      <div class="card">
+        <div class="card-title">Nombre en la escena</div>
+        <div class="coef-item" style="margin-bottom:.75rem;">
+          <input type="text" id="nombreSuperficie" placeholder="Ej: Cuerpo principal, Cabeza..." style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:.85rem;padding:.5rem .8rem;outline:none;width:100%;">
+        </div>
+        <div style="display:flex;gap:.6rem;margin-bottom:.5rem;">
+          <button class="btn btn-primary" id="btnCalc" onclick="calcular()" style="flex:1;">
+            Clasificar
+          </button>
+          <button class="btn btn-add" onclick="agregarAEscena()" id="btnAgregar" style="flex:1;" disabled>
+            + Agregar a escena
+          </button>
+        </div>
+        <div style="display:flex;align-items:center;gap:.6rem;">
+          <div class="loading" id="loading"><div class="spinner"></div><span>Calculando...</span></div>
+        </div>
+        <div class="error-msg" id="errorMsg"></div>
+      </div>
+
+      <!-- Lista de escena -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;">
+          <div class="card-title" style="margin-bottom:0;">Escena actual</div>
+          <button class="btn btn-sm btn-del" onclick="limpiarEscena()" style="font-size:.65rem;">Limpiar todo</button>
+        </div>
+        <div class="escena-list" id="escenaList">
+          <div class="escena-empty">La escena está vacía.<br>Agrega superficies arriba.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PANEL DERECHO ══ -->
+    <div class="panel-right">
+
+      <!-- Resultado clasificación -->
+      <div class="resultado-card card" id="resultadoTipo">
+        <div class="tipo-badge">📐 Última superficie clasificada</div>
+        <div class="tipo-nombre" id="tipoNombre">—</div>
+        <div class="tipo-desc" id="tipoDesc">—</div>
+        <div class="ecuacion-result" id="ecuacionResult">—</div>
+      </div>
+
+      <!-- Gradiente -->
+      <div class="resultado-card card" id="resultadoGrad">
+        <div class="card-title">Gradiente ∇F en (x₀, y₀, z₀)</div>
+        <div class="gradiente-grid">
+          <div class="grad-item"><div class="grad-label">∂F/∂x</div><div class="grad-value" id="gx">—</div></div>
+          <div class="grad-item"><div class="grad-label">∂F/∂y</div><div class="grad-value" id="gy">—</div></div>
+          <div class="grad-item"><div class="grad-label">∂F/∂z</div><div class="grad-value" id="gz">—</div></div>
+          <div class="grad-mag">
+            <span style="font-family:'DM Serif Display',serif;color:var(--accent3);">|∇F|</span>
+            <span class="grad-value" id="gmag">—</span>
+          </div>
+        </div>
+        <div class="punto-eval" id="puntoEval"></div>
+      </div>
+
+      <!-- Gráfica -->
+      <div class="grafica-container">
+        <div class="plot-placeholder" id="plotPlaceholder">
+          <div class="icon">⬡</div>
+          <p>Agrega superficies a la escena<br>y aparecerán aquí juntas</p>
+        </div>
+        <div id="plot"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const API = 'http://localhost:8000';
+
+// ─── PALETA DE COLORES AUTOMÁTICA ────────────────────────────────────────────
+const PALETAS = [
+  [[0,'#7c6af7'],[0.5,'#a06af7'],[1,'#f76a8a']],
+  [[0,'#6af7c2'],[0.5,'#6af7f7'],[1,'#6a9af7']],
+  [[0,'#f7c26a'],[0.5,'#f7a06a'],[1,'#f76a8a']],
+  [[0,'#f76af7'],[0.5,'#a06af7'],[1,'#6af7c2']],
+  [[0,'#f7f76a'],[0.5,'#f7c26a'],[1,'#f7a06a']],
+  [[0,'#6af7c2'],[0.5,'#a0f76a'],[1,'#f7f76a']],
+];
+const COLORES_DOT = ['#7c6af7','#6af7c2','#f7c26a','#f76a8a','#f76af7','#f7f76a'];
+
+// ─── ESTADO ──────────────────────────────────────────────────────────────────
+let escena = [];          // [{id, nombre, tipo, coefs, puntos, paleta, visible}]
+let ultimoResultado = null;
+let ultimosCoefs = null;
+let contadorId = 0;
+
+// ─── PRESETS INDIVIDUALES ────────────────────────────────────────────────────
+const presets = {
+  esfera:        {A:1,B:1,C:1,D:0,E:0,F:0,G:0,H:0,I:0,J:-9,   px:3,py:0,pz:0},
+  elipsoide:     {A:1,B:4,C:9,D:0,E:0,F:0,G:0,H:0,I:0,J:-36,  px:6,py:0,pz:0},
+  hiperboloide1: {A:1,B:1,C:-1,D:0,E:0,F:0,G:0,H:0,I:0,J:-1,  px:1,py:0,pz:1},
+  hiperboloide2: {A:1,B:1,C:-1,D:0,E:0,F:0,G:0,H:0,I:0,J:1,   px:0,py:0,pz:2},
+  paraboloide:   {A:1,B:1,C:0,D:0,E:0,F:0,G:0,H:0,I:-1,J:0,   px:1,py:1,pz:2},
+  silla:         {A:1,B:-1,C:0,D:0,E:0,F:0,G:0,H:0,I:-1,J:0,  px:1,py:1,pz:0},
+  cono:          {A:1,B:1,C:-1,D:0,E:0,F:0,G:0,H:0,I:0,J:0,   px:1,py:0,pz:1},
+  cilindro:      {A:1,B:1,C:0,D:0,E:0,F:0,G:0,H:0,I:0,J:-4,   px:2,py:0,pz:0},
+};
+
+function cargarPreset(nombre) {
+  const p = presets[nombre];
+  if (!p) return;
+  ['A','B','C','D','E','F','G','H','I','J','px','py','pz'].forEach(k => {
+    document.getElementById(k).value = p[k] ?? 0;
+  });
+  document.getElementById('nombreSuperficie').value = nombre.charAt(0).toUpperCase() + nombre.slice(1);
+  actualizarEcuacion();
+  document.getElementById('btnAgregar').disabled = true;
+  ultimoResultado = null;
+}
+
+// ─── ESCENAS COMPLETAS ───────────────────────────────────────────────────────
+const escenasCompletas = {
+  muneco: [
+    {nombre:'Cuerpo grande',   A:1,B:1,C:1,J:-9,   px:0,py:0,pz:0},
+    {nombre:'Cuerpo mediano',  A:1,B:1,C:1,I:-8,J:-4, px:0,py:0,pz:4},
+    {nombre:'Cabeza',          A:1,B:1,C:1,I:-14,J:-48,px:0,py:0,pz:7},
+  ],
+  sistema_solar: [
+    {nombre:'Sol',             A:1,B:1,C:1,J:-16,  px:0,py:0,pz:0},
+    {nombre:'Planeta 1',       A:1,B:1,C:1,G:-12,J:-4,px:6,py:0,pz:0},
+    {nombre:'Planeta 2',       A:1,B:1,C:1,G:16,J:-1, px:-8,py:0,pz:0},
+    {nombre:'Anillo (cilindro)',A:1,B:0,C:1,J:-25, px:0,py:0,pz:0},
+  ],
+  torre: [
+    {nombre:'Base (cilindro)', A:1,B:1,C:0,J:-9,   px:3,py:0,pz:0},
+    {nombre:'Cuerpo (hiperboloide)',A:1,B:1,C:-1,J:-1,px:1,py:0,pz:1},
+    {nombre:'Cúpula (elipsoide)',A:1,B:1,C:4,I:-24,J:32,px:0,py:0,pz:3},
+  ],
+};
+
+async function cargarEscena(nombre) {
+  const superficies = escenasCompletas[nombre];
+  if (!superficies) return;
+  limpiarEscena();
+
+  for (const s of superficies) {
+    const coefs = {A:s.A||0,B:s.B||0,C:s.C||0,D:s.D||0,E:s.E||0,F:s.F||0,
+                   G:s.G||0,H:s.H||0,I:s.I||0,J:s.J||0,
+                   px:s.px||0,py:s.py||0,pz:s.pz||0};
+    try {
+      const res = await fetch(`${API}/conicas/clasificar`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(coefs)
+      });
+      if (!res.ok) continue;
+      const data = await res.json();
+      agregarItemAEscena(s.nombre, data, coefs);
+    } catch(e) { console.error(e); }
+  }
+  graficarEscena();
+}
+
+// ─── ECUACIÓN PREVIEW ────────────────────────────────────────────────────────
+function actualizarEcuacion() {
+  const ids =['A','B','C','D','E','F','G','H','I'];
+  const vars=['x²','y²','z²','xy','xz','yz','x','y','z'];
+  const vals = ids.map(id => parseFloat(document.getElementById(id).value) || 0);
+  const J    = parseFloat(document.getElementById('J').value) || 0;
+
+  // Construir lado izquierdo (todos los términos excepto J)
+  let partes = [];
+  vals.forEach((v, i) => {
+    if (Math.abs(v) < 1e-10) return;
+    const vn = vars[i];
+    const abs = Math.abs(v);
+    const coefStr = abs === 1 ? '' : (abs % 1 === 0 ? abs : +abs.toFixed(3));
+    const txt = coefStr + vn;
+    partes.push({ txt, neg: v < 0 });
+  });
+
+  // Lado derecho: −J  (pasamos J al otro lado cambiando signo)
+  const ladoDerecho = Math.abs(J) < 1e-10
+    ? '0'
+    : ((-J) % 1 === 0 ? String(-J) : String(+(-J).toFixed(4)));
+
+  if (!partes.length) {
+    document.getElementById('eqDisplay').textContent = '0 = ' + ladoDerecho;
+    return;
+  }
+
+  // Primer término (respeta su signo)
+  let lhs = partes[0].neg ? '−' + partes[0].txt : partes[0].txt;
+  partes.slice(1).forEach(p => {
+    lhs += p.neg ? ' − ' + p.txt : ' + ' + p.txt;
+  });
+
+  document.getElementById('eqDisplay').textContent = lhs + ' = ' + ladoDerecho;
+}
+
+// ─── CALCULAR ────────────────────────────────────────────────────────────────
+async function calcular() {
+  const btn=document.getElementById('btnCalc');
+  const loading=document.getElementById('loading');
+  const errorMsg=document.getElementById('errorMsg');
+  const coefs={};
+  ['A','B','C','D','E','F','G','H','I','J','px','py','pz'].forEach(k=>{
+    coefs[k]=parseFloat(document.getElementById(k).value)||0;
+  });
+  btn.disabled=true;
+  loading.style.display='flex';
+  errorMsg.style.display='none';
+  document.getElementById('btnAgregar').disabled=true;
+
+  try {
+    const res=await fetch(`${API}/conicas/clasificar`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(coefs)
+    });
+    if(!res.ok) throw new Error(`Error ${res.status}`);
+    const data=await res.json();
+    ultimoResultado=data;
+    ultimosCoefs={...coefs};
+    mostrarResultado(data,coefs);
+    document.getElementById('btnAgregar').disabled=false;
+  } catch(err) {
+    errorMsg.style.display='block';
+    errorMsg.textContent='⚠ No se pudo conectar al servidor. Asegúrate de que FastAPI esté corriendo en localhost:8000';
+  } finally {
+    btn.disabled=false;
+    loading.style.display='none';
+  }
+}
+
+// ─── MOSTRAR RESULTADO ───────────────────────────────────────────────────────
+function mostrarResultado(data,coefs) {
+  document.getElementById('resultadoTipo').style.display='block';
+  document.getElementById('resultadoGrad').style.display='block';
+  document.getElementById('tipoNombre').textContent=data.tipo;
+  document.getElementById('tipoDesc').textContent=data.descripcion;
+  document.getElementById('ecuacionResult').textContent=data.ecuacion_latex;
+  document.getElementById('gx').textContent=data.gradiente.gx;
+  document.getElementById('gy').textContent=data.gradiente.gy;
+  document.getElementById('gz').textContent=data.gradiente.gz;
+  document.getElementById('gmag').textContent=data.gradiente.magnitud;
+  const en=data.punto_en_superficie;
+  document.getElementById('puntoEval').innerHTML=`
+    <span class="tag">F(${coefs.px},${coefs.py},${coefs.pz}) = ${data.valor_en_punto}</span>
+    <span class="tag ${en?'en-superficie':'fuera'}">${en?'✓ En la superficie':'✗ Fuera de la superficie'}</span>`;
+}
+
+// ─── AGREGAR A ESCENA ────────────────────────────────────────────────────────
+function agregarAEscena() {
+  if (!ultimoResultado) return;
+  const nombre = document.getElementById('nombreSuperficie').value.trim()
+    || ultimoResultado.tipo + ' ' + (escena.length + 1);
+  agregarItemAEscena(nombre, ultimoResultado, ultimosCoefs);
+  graficarEscena();
+  document.getElementById('btnAgregar').disabled=true;
+  ultimoResultado=null;
+}
+
+function agregarItemAEscena(nombre, data, coefs) {
+  const idx = escena.length;
+  const id = ++contadorId;
+  escena.push({
+    id, nombre, tipo: data.tipo,
+    puntos: data.puntos_grafica,
+    coefs,
+    paleta: PALETAS[idx % PALETAS.length],
+    colorDot: COLORES_DOT[idx % COLORES_DOT.length],
+    visible: true
+  });
+  renderizarLista();
+}
+
+// ─── RENDERIZAR LISTA ────────────────────────────────────────────────────────
+function renderizarLista() {
+  const list = document.getElementById('escenaList');
+  if (escena.length === 0) {
+    list.innerHTML='<div class="escena-empty">La escena está vacía.<br>Agrega superficies arriba.</div>';
+    return;
+  }
+  list.innerHTML = escena.map(item => `
+    <div class="escena-item ${item.visible?'':'oculta'}" id="item-${item.id}">
+      <div class="color-dot" style="background:${item.colorDot};"></div>
+      <div style="flex:1;min-width:0;">
+        <div class="escena-nombre">${item.nombre}</div>
+        <div class="escena-tipo">${item.tipo}</div>
+      </div>
+      <div class="escena-actions">
+        <button class="btn btn-sm btn-eye" onclick="toggleVisible(${item.id})"
+          title="${item.visible?'Ocultar':'Mostrar'}">${item.visible?'👁':'◌'}</button>
+        <button class="btn btn-sm btn-del" onclick="eliminarItem(${item.id})" title="Eliminar">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleVisible(id) {
+  const item = escena.find(s=>s.id===id);
+  if (item) { item.visible=!item.visible; renderizarLista(); graficarEscena(); }
+}
+
+function eliminarItem(id) {
+  escena = escena.filter(s=>s.id!==id);
+  renderizarLista();
+  graficarEscena();
+}
+
+function limpiarEscena() {
+  escena=[];
+  renderizarLista();
+  graficarEscena();
+}
+
+// ─── GRAFICAR ESCENA ─────────────────────────────────────────────────────────
+function graficarEscena() {
+  const visibles = escena.filter(s=>s.visible);
+  const placeholder = document.getElementById('plotPlaceholder');
+  const plotDiv = document.getElementById('plot');
+
+  if (visibles.length===0) {
+    placeholder.style.display='block';
+    plotDiv.style.display='none';
+    Plotly.purge(plotDiv);
+    return;
+  }
+
+  placeholder.style.display='none';
+  plotDiv.style.display='block';
+
+  const traces = [];
+  visibles.forEach(item => {
+    const p = item.puntos;
+    const base = {
+      type:'surface', colorscale:item.paleta,
+      opacity:0.82, showscale:false, name:item.nombre,
+      hovertemplate:`<b>${item.nombre}</b><br>x:%{x:.2f} y:%{y:.2f} z:%{z:.2f}<extra></extra>`
+    };
+    traces.push({...base, x:p.x, y:p.y, z:p.z1});
+    if (p.doble_hoja && p.z2) {
+      traces.push({...base, x:p.x, y:p.y, z:p.z2, name:item.nombre+' (2)'});
+    }
+  });
+
+  const layout = {
+    paper_bgcolor:'rgba(0,0,0,0)',
+    plot_bgcolor:'rgba(0,0,0,0)',
+    margin:{l:0,r:0,t:10,b:0},
+    showlegend: escena.length>1,
+    legend:{
+      font:{family:'DM Mono,monospace',size:11,color:'#e8e8f0'},
+      bgcolor:'rgba(26,26,38,0.8)',
+      bordercolor:'#2a2a3d',borderwidth:1,
+      x:0.01,y:0.99
+    },
+    scene:{
+      bgcolor:'rgba(18,18,26,0.95)',
+      xaxis:{title:'X',gridcolor:'#2a2a3d',zerolinecolor:'#7c6af7',tickfont:{color:'#6b6b8a',family:'DM Mono'}},
+      yaxis:{title:'Y',gridcolor:'#2a2a3d',zerolinecolor:'#7c6af7',tickfont:{color:'#6b6b8a',family:'DM Mono'}},
+      zaxis:{title:'Z',gridcolor:'#2a2a3d',zerolinecolor:'#7c6af7',tickfont:{color:'#6b6b8a',family:'DM Mono'}},
+      camera:{eye:{x:1.6,y:1.6,z:1.1}}
+    }
+  };
+
+  Plotly.react(plotDiv, traces, layout, {responsive:true,displaylogo:false,
+    modeBarButtonsToRemove:['toImage']});
+}
+
+// Init
+actualizarEcuacion();
+</script>
+</body>
+</html>
