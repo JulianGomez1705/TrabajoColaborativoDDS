@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse # 1. IMPORTA ESTO
 from rutas import simulation
 
 app = FastAPI(
@@ -9,7 +10,6 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# CORS para que el frontend pueda llamar al backend localmente
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,20 +17,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Rutas
 app.include_router(simulation.router)
 
-# Archivos estáticos (frontend)
+# Archivos estáticos
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-
+# 2. MODIFICA TU RUTA RAÍZ ASÍ:
 @app.get("/")
 def home():
-    return {
-        "proyecto": "Cálculo Vectorial — Superficies Cónicas",
-        "version": "2.0",
-        "endpoints": {
-            "clasificar": "POST /conicas/clasificar",
-            "docs": "/docs"
-        }
-    }
+    # Reemplaza 'index.html' por el nombre real de tu archivo si se llama distinto
+    return FileResponse("static/index.html")
